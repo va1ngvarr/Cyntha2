@@ -3,29 +3,9 @@
 #endif
 
 #include "cyntha2.h"
+#include "utils.h"
+
 #include "globals.h"
-
-void draw_rects()
-{
-    SDL_SetRenderDrawColor(render, 180, 20, 20, 255);
-
-    int x = 20, y = 20, w = 103, h = 103;
-
-    for (int i = 0; i < 10; i++)
-    {
-        if (i == 5)
-        {
-            x = 20;
-            y = h + (y * 2);
-
-            SDL_SetRenderDrawColor(render, 20, 180, 20, 255);
-        }
-
-        CreateRect(x, y, w, h);
-        SDL_RenderFillRect(render, &rects[i]);
-        x += 20 + w;
-    }
-}
 
 char *paths[] = 
 {
