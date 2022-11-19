@@ -18,36 +18,33 @@
 #define BUTTONS_AMOUNT sizeof(wav_paths)/sizeof(wav_paths[0])
 
 const Uint16 SCREEN_WIDTH = 600;
-const Uint16 SCREEN_HEIGHT = 300;
+const Uint16 SCREEN_HEIGHT = 400;
 
 const char *wav_paths[] = 
 {
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Coco - C.wav",
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Razor - C.wav",
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Savage - C.wav",
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Talent - C.wav",
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Vortex - C.wav",
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Coco - C.wav",
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Razor - C.wav",
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Savage - C.wav",
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Talent - C.wav",
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura 808 - Vortex - C.wav",
 
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - Almost Strings - C.wav",
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - Dark Reese 01 - C.wav",
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - Dirty Clean - C.wav",
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - FM Donk - C.wav",
-    "../resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - Medusa - C.wav"
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - Almost Strings - C.wav",
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - Dark Reese 01 - C.wav",
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - Dirty Clean - C.wav",
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - FM Donk - C.wav",
+    "resources/Sounds/Echo Sound Works - Aura One Shots/ESW Aura Bass - Medusa - C.wav"
 };
 
-SDL_Rect rects[BUTTONS_AMOUNT];
-Mix_Chunk *chunks[BUTTONS_AMOUNT];
 Button buttons[BUTTONS_AMOUNT];
+
+Mix_Chunk *chunks[BUTTONS_AMOUNT];
 
 void LoadSound(const char *wav_path);
 void PlaySound(Mix_Chunk *chunk);
-
 void SetVolume(Uint8 vol);
 
-void CreateSquare(Pos_Size PosSize);
 void DrawSquare(SDL_Renderer *renderer, SDL_Rect rect, RGB rgb);
-
-void CreateButton(Mix_Chunk *chunk, SDL_Rect rect, SDL_KeyCode key_bind, RGB PassiveRGB, RGB ActiveRGB);
+void CreateButton(Mix_Chunk *chunk, Pos_Size PosSize, SDL_KeyCode key_bind, RGB PassiveRGB, RGB ActiveRGB, int Index);
 
 int init();
 void quit();
@@ -85,14 +82,16 @@ int main(int argc, char **argv)
         }
     };
 
-    int ratio[] = {1, 5};
+    int ratio[] = {1, 5}; // padding to button size ratio
 
     Uint16 sqr_pad;
     Uint16 sqr_side;
     
-    int row = 5;
+    int row = 5; // number of buttons per row
 
-    sqr_pad = SCREEN_WIDTH / (row+1) / (ratio[0] + ratio[1]) * ratio[0];
+    // margins and button sizes depend on screen width
+
+    sqr_pad  = SCREEN_WIDTH / (row+1) / (ratio[0] + ratio[1]) * ratio[0];
     sqr_side = SCREEN_WIDTH / row / (ratio[0] + ratio[1]) * ratio[1];
 
     Pos_Size PosSize = {sqr_pad, sqr_pad, sqr_side, sqr_side};
@@ -100,22 +99,24 @@ int main(int argc, char **argv)
     for (int i = 0; i < BUTTONS_AMOUNT; i++)
     {
         LoadSound(wav_paths[i]);
-        CreateSquare(PosSize);
 
+        if (i > 4) // Second row is green
+        {
+            CreateButton(chunks[i], PosSize, bindings[i], rgbs[0][0], rgbs[1][0], i);
+        }
+        else
+            CreateButton(chunks[i], PosSize, bindings[i], rgbs[0][1], rgbs[1][1], i);
+
+        // Update position
         PosSize.x += sqr_pad + sqr_side;
 
-        if (i == 4)
+        if (i == 4) // Second row
         {
             PosSize.x = sqr_pad;
             PosSize.y += sqr_pad + sqr_side;
         }
-        if (i > 4)
-        {
-            CreateButton(chunks[i], rects[i], bindings[i], rgbs[0][0], rgbs[1][0]);
-        }
-        else
-            CreateButton(chunks[i], rects[i], bindings[i], rgbs[0][1], rgbs[1][1]);
 
+        // Rendering
         DrawSquare(renderer, buttons[i].rect, buttons[i].PassiveRGB);
     }
 
@@ -175,7 +176,7 @@ void LoadSound(const char *wav_path)
 
     for (int i = 0; i < BUTTONS_AMOUNT; i++)
     {
-        if (chunks[i] != NULL)
+        if (chunks[i] == NULL)
         {
             chunks[i] = chunk;
             break;
@@ -194,38 +195,18 @@ void SetVolume(Uint8 vol)
     Mix_Volume(-1, vol);
 }
 
-void CreateSquare(Pos_Size PosSize)
-{
-    SDL_Rect rect = {PosSize.x, PosSize.y, PosSize.w, PosSize.h};
-
-    for (int i = 0; i < BUTTONS_AMOUNT; i++)
-    {
-        if (rects[i])
-        {
-            rects[i] = rect;
-            break;
-        }
-    }
-}
-
 void DrawSquare(SDL_Renderer *renderer, SDL_Rect rect, RGB rgb)
 {
     SDL_SetRenderDrawColor(renderer, rgb.r, rgb.g, rgb.b, rgb.a);
     SDL_RenderFillRect(renderer, &rect);
 }
 
-void CreateButton(Mix_Chunk *chunk, SDL_Rect rect, SDL_KeyCode key_bind, RGB PassiveRGB, RGB ActiveRGB)
+void CreateButton(Mix_Chunk *chunk, Pos_Size PosSize, SDL_KeyCode key_bind, RGB PassiveRGB, RGB ActiveRGB, int Index)
 {
+    SDL_Rect rect = {PosSize.x, PosSize.y, PosSize.w, PosSize.h};
     Button button = {chunk, rect, key_bind, PassiveRGB, ActiveRGB, false};
 
-    for (int i = 0; i < BUTTONS_AMOUNT; i++)
-    {
-        if (buttons[i] != NULL)
-        {
-            buttons[i] = button;
-            break;
-        }
-    }
+    buttons[Index] = button;
 }
 
 int init()
