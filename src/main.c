@@ -1,10 +1,10 @@
 #if defined(_WIN32)
     #define SDL_MAIN_HANDLED
-/*          ~~~~~~~~~~~~~~~~ 
- * This is necessary for the program can run on Windows
- * Because SDL uses WINAPI for Windows
- * Without this code, the WinMain function is needed, but it may not work
- */
+    /*      ~~~~~~~~~~~~~~~~ 
+     * This is necessary for the program can run on Windows
+     * Because SDL uses WINAPI for Windows
+     * Without this code, the WinMain function is needed, but it may not work
+     */
 #endif
 
 #include <SDL2/SDL.h>
